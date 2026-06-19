@@ -20,53 +20,20 @@ def extract(filename):
 
 
 def transform(df):
-    """Transform and clean sales data.
-    
-    Args:
-        df: Input DataFrame
-        
-    Returns:
-        Cleaned DataFrame
-    """
     if df is None:
         return None
-    
-    # Data validation and cleaning
-    df = df.dropna()
-    df = df.drop_duplicates()
-    
-    print(f'[TRANSFORM] Data cleaned: {len(df)} valid records')
+    df=df.drop_duplicates()
     return df
 
-
-def load(df, table_name):
-    """Load transformed data into PostgreSQL warehouse.
-    
-    Args:
-        df: DataFrame to load
-        table_name: Target table name in database
-    """
-    if df is None:
-        return False
-    
-    print(f'[LOAD] Loading {len(df)} records into {table_name}...')
-    # PostgreSQL loading logic (coming in Phase 2)
-    return True
-
-
-def main():
-    """Execute complete ETL pipeline for sales data warehouse."""
-    # Extract
-    sales_data = extract(r"C:\Users\ss\.vscode\products.csv")
-    
-    # Transform
-    clean_data = transform(sales_data)
-    
-    # Load (coming soon)
-    # load(clean_data, 'sales_fact')
-    
-    print('[PIPELINE] ETL process complete!')
-
-
-if __name__ == '__main__':
-    main()
+def build_warehouse(customer_df,products_df,orders_df):
+    order_productdf = orders_df.merge(
+        products_df,
+        on = "product_id"
+          
+    )
+    full_df= order_productdf.merge(
+        customer_df,
+        on = 'customer_id'
+    )
+    full_df['revenue'] = ( full_df['quantity'] * full_df['price'])
+    return full_df
