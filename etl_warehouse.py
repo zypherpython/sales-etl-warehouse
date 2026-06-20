@@ -1,30 +1,39 @@
-import pandas as pd
-
+import pandas as pd 
+import logging
+import os
+logging.basicConfig(filename = 'etl.log',
+                    level = logging.INFO,
+                    format= " %(asctime)s %(levelname)s %(message)s ")
 def extract(filename):
-    """Extract data from CSV files using pandas.
-    
-    Args:
-        filename: Path to CSV file
-        
-    Returns:
-        DataFrame with loaded data, or None if file not found
-    """
     try:
-        df = pd.read_csv(filename)
-        print(f'[SUCCESS] {filename}: {len(df)} rows, {len(df.columns)} columns')
+        df=pd.read_csv(filename)
+
+        logging.info(f'Extracted {filename}')
         return df
-    
+
     except FileNotFoundError:
-        print(f'[ERROR] {filename} not found')
+        print(f'{filename} not found')
         return None
-
-
 def transform(df):
     if df is None:
         return None
-    df=df.drop_duplicates()
-    return df
+    before = len(df)
 
+    df=df.drop_duplicates()
+
+    after = len(df)
+    logging.info(f'Removed {before-after} duplicate rows')
+    return df
+def validate(df,filename):
+    if df is None:
+        return False
+        
+    if df.empty:
+        print(f'{filename} is empty!')
+        return False
+        
+    return True
+    
 def build_warehouse(customer_df,products_df,orders_df):
     order_productdf = orders_df.merge(
         products_df,
@@ -36,4 +45,6 @@ def build_warehouse(customer_df,products_df,orders_df):
         on = 'customer_id'
     )
     full_df['revenue'] = ( full_df['quantity'] * full_df['price'])
+    logging.info(f"Warehouse created with {len(full_df)}")
     return full_df
+    
