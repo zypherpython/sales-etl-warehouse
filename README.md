@@ -1,354 +1,201 @@
-# 🏢 Sales ETL Warehouse
+# 🧾 Sales ETL Pipeline[Learning Project]
 
-> *Enterprise-Grade Data Warehouse Platform with Multi-File ETL & Star Schema Integration*
-
----
-
-## 🚀 Why This Project is NEXT LEVEL
-
-This isn't just an ETL pipeline—it's a **complete data warehouse solution** built for enterprise analytics.
-
-### 📊 How It's Better Than The Last One:
-
-| Feature | Student Pipeline | Sales Warehouse |
-|---------|-------------------|------------------|
-| **Data Volume** | Single CSV (100 rows) | ✨ **Multiple Large Files** |
-| **Processing** | Basic CSV reading | ✨ **Pandas DataFrames** (faster, smarter) |
-| **Data Model** | Flat structure | ✨ **Star Schema** (Facts & Dimensions) |
-| **Database** | Single table | ✨ **Data Warehouse** (optimized queries) |
-| **Joins** | Manual queries | ✨ **Automated Joins** (dimensions linked) |
-| **Scalability** | Limited | ✨ **Enterprise-ready** |
-| **Analytics** | Basic stats | ✨ **Complex Aggregations** |
+> *A small, honest ETL pipeline — extract, clean, validate, merge. No magic, no marketing.* ✨
 
 ---
 
-## 📈 Project Overview
+## 👋 What is this?
 
-**Sales ETL Warehouse** is a sophisticated data pipeline designed to:
-- 📥 **Extract** multiple sales data sources (products, orders, customers, transactions)
-- 🔄 **Transform** raw data into a clean, normalized structure using Pandas
-- 🏪 **Load** into PostgreSQL as a fully normalized Star Schema warehouse
-- 📊 **Enable** powerful analytics through dimensional modeling
+This script takes three messy sales CSVs (**customers**, **products**, **orders**), cleans them up with pandas, checks they're not broken, and merges them into one tidy sales table — complete with a calculated `revenue` column. 💰
 
-### 🎯 Use Case
-Perfect for businesses needing:
-- Real-time sales analytics
-- Customer behavior insights
-- Product performance tracking
-- Revenue forecasting
-- Historical trend analysis
+No database. No 47 dependencies. Just a script you can read top-to-bottom in **two minutes** ⏱️ and actually understand.
 
 ---
 
-## 🏗️ Architecture: Star Schema Data Warehouse
+## 🔍 What it actually does
+
+| Function | Job |
+|---|---|
+| 📥 `extract()` | Reads a CSV into a DataFrame, logs it, returns `None` if the file's missing |
+| 🧹 `transform()` | Drops duplicate rows, logs how many got the boot |
+| ✅ `validate()` | Makes sure a DataFrame isn't `None` or empty before you trust it |
+| 🏗️ `build_warehouse()` | Merges orders + products + customers → adds revenue |
+
+That's it. Four functions, one job each. No bloat. 🪶
+
+---
+
+## 🔗 How the merge works
 
 ```
-                    ┌─────────────────┐
-                    │  SALES_FACT     │ (Central Fact Table)
-                    │                 │
-                    │ • sale_id       │
-                    │ • product_id ◄──┼──────┐
-                    │ • customer_id ◄─┼──┐   │
-                    │ • order_id ◄────┼──┼───┼─┐
-                    │ • amount        │  │   │ │
-                    │ • quantity      │  │   │ │
-                    │ • timestamp     │  │   │ │
-                    └─────────────────┘  │   │ │
-                           ▲             │   │ │
-                 ┌─────────┴─────────┬───┴───┼─┘
-                 │                   │       │
-         ┌───────▼─────────┐  ┌──────▼──┐  ┌──────▼──────┐
-         │ PRODUCT_DIM     │  │CUSTOMER │  │   ORDER_DIM │
-         │ (Dimensions)    │  │   _DIM  │  │ (Dimensions)│
-         │                 │  │         │  │             │
-         │ • product_id ✓  │  │ • cust..│  │ • order_id✓ │
-         │ • name          │  │ • name  │  │ • status    │
-         │ • category      │  │ • email │  │ • date      │
-         │ • price         │  │ • city  │  │ • priority  │
-         └─────────────────┘  └─────────┘  └─────────────┘
-
-✨ Benefits:
-   - Fast queries through pre-joined tables
-   - Easy analysis across dimensions
-   - Scalable for millions of records
+🛒 orders ──merge(product_id)──▶ 📦 products ──merge(customer_id)──▶ 👤 customers
+                                                                         │
+                                                                         ▼
+                                                       💵 revenue = quantity × price
 ```
 
----
+Your CSVs need these columns or the joins will sulk:
 
-## 🛠️ Technology Stack
+| File | Required column(s) |
+|---|---|
+| `orders.csv` | `product_id`, `customer_id` |
+| `products.csv` | `product_id`, `price` |
+| `customers.csv` | `customer_id` |
 
-| Layer | Technology | Purpose |
-|-------|-----------|----------|
-| **Data Processing** | Pandas | Fast, efficient data manipulation |
-| **Data Source** | CSV Files | Multiple input sources |
-| **Warehouse DB** | PostgreSQL | Enterprise RDBMS for analytics |
-| **Connection** | psycopg2 | Python-PostgreSQL bridge |
-| **Language** | Python 3.8+ | Clean, readable code |
+Output = one wide table: every order, joined with its product info and customer info, revenue calculated and ready to go. 🎉
 
 ---
 
-## 📊 Project Phases
+## 🚀 Usage
 
-### ✅ Phase 1: Extract (COMPLETED)
-- ✨ Multi-file CSV extraction using Pandas
-- ✨ Automatic column detection
-- ✨ Data profiling and validation
-- ✨ Error handling & logging
-
-**Status:** Ready for production
-
----
-
-### 🔄 Phase 2: Transform (IN PROGRESS - COMING SOON!)
-Will include:
-- Data cleaning & deduplication
-- Dimension table creation
-- Fact table aggregation
-- Data quality checks
-- Business logic implementation
-
-**Timeline:** Coming in next update ⏰
-
----
-
-### 📦 Phase 3: Load & Warehouse (UPCOMING)
-Will include:
-- PostgreSQL Star Schema creation
-- Bulk data loading with transactions
-- Constraint management
-- Incremental updates (SCD Type 2)
-- Data warehouse optimization
-
-**Timeline:** Phase 3 coming soon! 🚀
-
----
-
-## 🎯 Key Features
-
-### Extract Phase ⚡
 ```python
-✨ Multi-file support
-✨ Pandas-powered processing  
-✨ Automatic column detection
-✨ Data profiling & stats
-✨ Robust error handling
-```
+from etl_warehouse import extract, transform, validate, build_warehouse
 
-### Transform Phase 🔄 (Coming Soon)
-```python
-✨ Data cleaning & normalization
-✨ Duplicate removal
-✨ Null value handling
-✨ Type conversion & validation
-✨ Business rule application
-```
-
-### Load Phase 📦 (Coming Soon)
-```python
-✨ Star Schema creation
-✨ Fact table loading
-✨ Dimension table management
-✨ Incremental updates
-✨ Data warehouse optimization
-```
-
----
-
-## 💻 Getting Started
-
-### Prerequisites
-```bash
-Python 3.8+
-PostgreSQL 12+
-Pandas
-psycopg2
-```
-
-### Installation
-```bash
-# Clone the repository
-git clone https://github.com/zypherpython/sales-etl-warehouse.git
-cd sales-etl-warehouse
-
-# Install dependencies
-pip install pandas psycopg2-binary
-```
-
-### Quick Start
-```python
-from etl_warehouse import extract, transform, load
-
-# Extract sales data from multiple files
-products = extract('data/products.csv')
+# 📥 Extract
 customers = extract('data/customers.csv')
-orders = extract('data/orders.csv')
+products  = extract('data/products.csv')
+orders    = extract('data/orders.csv')
 
-# Transform data
-clean_products = transform(products)
-clean_customers = transform(customers)
-clean_orders = transform(orders)
+# 🧹 Transform (dedupe)
+customers = transform(customers)
+products  = transform(products)
+orders    = transform(orders)
 
-# Load to warehouse (coming in Phase 3)
-load(clean_products, 'product_dim')
-load(clean_customers, 'customer_dim')
-load(clean_orders, 'sales_fact')
+# ✅ Validate before merging
+if all(validate(df, name) for df, name in [
+    (customers, 'customers.csv'),
+    (products, 'products.csv'),
+    (orders, 'orders.csv'),
+]):
+    warehouse = build_warehouse(customers, products, orders)
+    print(warehouse.head())
 ```
 
 ---
 
-## 📁 Project Structure
+## 📜 Logging
+
+Every run writes to `etl.log` so you've got receipts 🧾:
 
 ```
-sales-etl-warehouse/
-├── etl_warehouse.py          # Main ETL pipeline
-├── data/                     # Sample datasets
-│   ├── products.csv
+ 2026-06-20 10:42:11 INFO Extracted data/orders.csv 
+ 2026-06-20 10:42:11 INFO Removed 3 duplicate rows
+ 2026-06-20 10:42:12 INFO Warehouse created with 1247
+```
+
+If a file's missing, `extract()` prints a friendly warning instead of crashing the whole run 🙅 — `validate()` catches it before things go further downstream.
+
+---
+
+## ⚙️ Requirements
+
+```bash
+pip install pandas
+```
+
+That's genuinely the whole list. 🐍 Python 3.7+ recommended.
+
+---
+
+## 📁 Project structure
+
+```
+.
+├── etl_warehouse.py    # extract, transform, validate, build_warehouse
+├── data/
 │   ├── customers.csv
-│   ├── orders.csv
-│   └── transactions.csv
-├── README.md                 # This file
-├── requirements.txt          # Dependencies
-└── docs/
-    ├── SCHEMA.md             # Star schema documentation
-    ├── ROADMAP.md            # Development roadmap
-    └── PERFORMANCE.md        # Benchmarks (coming soon)
+│   ├── products.csv
+│   └── orders.csv
+└── etl.log              # generated on run 📝
 ```
 
 ---
 
-## 🔬 Data Warehouse Schema
+## ⚠️ Known limitations (keepin' it real)
 
-### Fact Table: SALES_FACT
-```sql
-CREATE TABLE sales_fact (
-    sale_id SERIAL PRIMARY KEY,
-    product_id INT REFERENCES product_dim(product_id),
-    customer_id INT REFERENCES customer_dim(customer_id),
-    order_id INT REFERENCES order_dim(order_id),
-    amount DECIMAL(10, 2),
-    quantity INT,
-    timestamp TIMESTAMP
-);
+- 🔓 `build_warehouse` assumes clean key columns — unmatched rows quietly vanish on merge (default `how='inner'`) instead of raising a flag.
+- 🕳️ No null/type handling yet beyond dedupe — a missing `price` or `quantity` = `NaN` revenue.
+- 🚫 No database load step yet — output lives in memory; saving it (CSV/SQL/whatever) is on you for now.
+- 🔎 `validate()` only checks `None`/empty, not whether required columns actually exist.
+
+---
+
+## 🗺️ Possible next steps
+
+- [ ] 🛡️ Schema/column validation in `validate()`
+- [ ] 🔀 Configurable join type (inner vs. left) for `build_warehouse`
+- [ ] 💾 Export step (`to_csv`, `to_sql`, etc.)
+- [ ] 🩹 Null handling for `quantity`/`price` before computing revenue
+- [ ] 🖥️ CLI entry point (`python etl_warehouse.py --data-dir ./data`)
+
+---
+
+## 🔮 Future plans: turning this into a real warehouse
+
+Right now `build_warehouse()` hands back one flat DataFrame. The dream 💭 is to grow this into a proper **star schema** and actually load it into Postgres — not just merge stuff in memory and call it a day.
+
+### 1️⃣ Split the flat table into fact + dimensions
+
+```
+        ⭐ customer_dim          ⭐ product_dim
+        ───────────              ───────────
+        customer_id PK           product_id PK
+        name                     name
+        email                    category
+        city                     price
+              │                        │
+              └──────────┬─────────────┘
+                          ▼
+                   🎯 sales_fact
+                   ───────────
+                   sale_id PK
+                   customer_id FK
+                   product_id  FK
+                   order_id    FK
+                   quantity
+                   revenue
+                   order_date
 ```
 
-### Dimension Table: PRODUCT_DIM
-```sql
-CREATE TABLE product_dim (
-    product_id INT PRIMARY KEY,
-    name VARCHAR(255),
-    category VARCHAR(100),
-    price DECIMAL(10, 2)
-);
+`customer_dim` and `product_dim` hold the descriptive details; `sales_fact` holds just keys and numbers in the middle. One fact table, dimensions orbiting it like a little solar system ⭐ — that's the "star" in star schema.
+
+### 2️⃣ Add a `load()` function
+
+A fourth step joining `extract` → `transform` → `validate`:
+
+```python
+import psycopg2
+
+def load(df, table_name, conn_params):
+    """Load a DataFrame into a Postgres table. 🚚"""
+    conn = psycopg2.connect(**conn_params)
+    cur = conn.cursor()
+    # bulk insert / upsert logic here
+    conn.commit()
+    cur.close()
+    conn.close()
+    logging.info(f'Loaded {len(df)} rows into {table_name}')
 ```
 
-*(More dimensions coming in Phase 2)*
+Planned call pattern:
+
+```python
+load(customer_dim, 'customer_dim', conn_params)
+load(product_dim, 'product_dim', conn_params)
+load(sales_fact, 'sales_fact', conn_params)
+```
+
+### 3️⃣ Load target: pgAdmin / PostgreSQL 🐘
+
+Once `load()` lands, the warehouse gets managed through **pgAdmin**, so you'll be able to:
+- 👀 Browse `customer_dim`, `product_dim`, and `sales_fact` as real tables
+- 🧠 Run SQL joins/aggregations straight in pgAdmin's query tool
+- 🔍 Verify row counts and foreign keys after every load
+
+> 🚧 Heads up: none of this — `load()`, the fact/dim split, or the Postgres connection — exists in the code yet. This is the roadmap, not a feature list. Wanted to be upfront about that so nobody clones this expecting a database. 🙏
 
 ---
 
-## 📊 Performance & Scalability
+## 📄 License
 
-**Designed for enterprise scale:**
-- ✨ Handles millions of records
-- ✨ Optimized indexes for fast queries
-- ✨ Batch processing capabilities
-- ✨ Incremental update support
-- ✨ Compression & partitioning ready
-
----
-
-## 🎓 Learning Path
-
-This project teaches:
-- 📚 ETL pipeline architecture
-- 📚 Data warehouse design (Star Schema)
-- 📚 Pandas for data manipulation
-- 📚 PostgreSQL database design
-- 📚 Python database integration
-- 📚 Dimensional modeling
-- 📚 Data quality & validation
-
----
-
-## 🗺️ Development Roadmap
-
-### Phase 1: Extract ✅
-- [x] Multi-file CSV extraction
-- [x] Pandas DataFrame handling
-- [x] Error handling & logging
-
-### Phase 2: Transform 🔄
-- [ ] Data cleaning functions
-- [ ] Dimension table creation
-- [ ] Data validation framework
-- [ ] Business logic implementation
-
-### Phase 3: Load 📦
-- [ ] PostgreSQL Star Schema
-- [ ] Fact table loading
-- [ ] Dimension table management
-- [ ] Incremental updates
-
-### Phase 4: Analytics 📈
-- [ ] Sample queries
-- [ ] Aggregation views
-- [ ] Performance dashboards
-- [ ] Reporting examples
-
-### Phase 5: Advanced Features 🚀
-- [ ] Real-time data ingestion
-- [ ] Data quality monitoring
-- [ ] Automated scheduling
-- [ ] API for warehouse access
-
----
-
-## 🤝 Contributing
-
-This is a **learning project**, but contributions are welcome!
-- 💡 Suggestions for improvements
-- 🐛 Bug reports
-- 📖 Documentation enhancements
-- 🎯 Feature ideas
-- ⭐ Feedback & reviews
-
----
-
-## Acknowledgments
-
-| Contributor | Role |
-|-------------|------|
-| zypherpython | Project Lead & Developer |
-| Copilot | Architecture & Documentation |
-
----
-
-## 📝 License
-
-Open source under MIT License - See LICENSE file for details
-
----
-
-## 🎯 Why This Matters
-
-**Data warehouses are the backbone of modern analytics.**
-
-This project demonstrates how to build enterprise-grade solutions that handle:
-- Complex data relationships
-- Multi-source integration  
-- Scalable architecture
-- High-performance queries
-- Real business insights
-
-Perfect for learning **real-world data engineering** at scale! 🚀
-
----
-
-<div align="center">
-  <h3>🌟 Ready to Transform Data into Decisions? 🌟</h3>
-  <br/>
-  <p><strong>From Raw Data to Intelligent Insights</strong></p>
-  <br/>
-  <p>⏰ <strong>Stay tuned for Phase 2 & Phase 3 updates!</strong></p>
-  <br/>
-  <p><em>Enterprise-grade data warehousing starts here 📊</em></p>
-</div>
+MIT — do what you want with it 🤙
