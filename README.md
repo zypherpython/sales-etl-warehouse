@@ -1,6 +1,6 @@
 # 🧾 Sales ETL Pipeline[Learning Project]
 
-> *A small, honest ETL pipeline — extract, clean, validate, merge. No magic, no marketing.* ✨
+>  Multi-File ETL Pipeline with Data Validation, Warehouse Modeling, and PostgreSQL Integration Roadmap.
 
 ---
 
