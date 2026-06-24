@@ -39,7 +39,7 @@ try:
 df = pd.read_csv(filename)
 
 ```
-    logging.info(f"Extracted {filename}")
+    logging.info(f"Extracted {filename}!!")
     return df
 
 except FileNotFoundError:
@@ -64,7 +64,7 @@ before = len(df)
 df = df.drop_duplicates()
 
 logging.info(
-    f"Removed {before - len(df)} duplicate rows"
+    f"Removed {before - len(df)} duplicate rows!!"
 )
 
 before = len(df)
@@ -72,7 +72,7 @@ before = len(df)
 df = df.dropna()
 
 logging.info(
-    f"Removed {before - len(df)} Missing rows"
+    f"Removed {before - len(df)} Missing rows!!"
 )
 
 if "name" in df.columns:
@@ -130,7 +130,7 @@ full_df["revenue"] = (
 )
 
 logging.info(
-    f"Warehouse created with {len(full_df)}"
+    f"Warehouse created with {len(full_df)}!"
 )
 
 return full_df
